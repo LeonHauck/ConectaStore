@@ -70,4 +70,4 @@ cargo test
 
 Apresentação da solução, da modelagem matemática adotada e demonstração prática da execução e dos testes:
 
-🔗 **[Clique aqui para assistir ao Vídeo Pitch no YouTube](COLOQUE_SEU_LINK_AQUI)**
+🔗 **https://youtu.be/i8VOKBIjWvQ**
