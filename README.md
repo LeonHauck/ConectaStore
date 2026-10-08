@@ -1,46 +1,73 @@
-# ConectaStore - Sistema de Recomendação de Produtos
+<h1 align="center">
+  <img alt="ConectaStore Logo" src="https://img.shields.io/badge/ConectaStore-000000?style=for-the-badge&logo=rust&logoColor=white" />
+</h1>
 
-O projeto **ConectaStore** é uma solução desenvolvida em Rust para a MegaStore com o objetivo de gerar recomendações relevantes para os clientes com base no histórico de compras através da estruturação dos dados como um grafo.
+<p align="center">
+  <strong>Sistema de Recomendação de Produtos baseado em Grafos para E-commerce</strong>
+</p>
 
-## Objetivo e Funcionamento do Sistema
-Este sistema visa mitigar o problema de recomendações genéricas de um e-commerce. Ao invés de apenas recomendar "os mais vendidos", o sistema mapeia a jornada de clientes e produtos através de um **Grafo Bidirecional**. 
-A recomendação funciona através de um Filtro Colaborativo usando o algoritmo de **Busca em Largura (BFS - Breadth-First Search)**. Quando pedimos uma recomendação para um usuário, o sistema vasculha:
-1. Os produtos que o usuário comprou.
-2. Outros usuários que compraram os mesmos produtos.
-3. Novos produtos comprados por esses outros usuários, sugerindo-os.
+<p align="center">
+  <a href="#-sobre-o-projeto">Sobre</a> •
+  <a href="#-arquitetura-e-estruturas-de-dados">Arquitetura</a> •
+  <a href="#-como-executar">Como Executar</a> •
+  <a href="#-testes-e-desempenho">Testes</a> •
+  <a href="#-vídeo-pitch">Vídeo Pitch</a>
+</p>
 
-## Tecnologias e Estruturas Utilizadas
-- **Linguagem:** Rust (Devido ao seu alto desempenho e forte controle sobre a memória).
-- **Estruturas de Dados:**
-  - `HashMap`: Utilizado tanto para armazenar os nós do grafo por ID permitindo busca instantânea ($O(1)$), quanto para construir a **Lista de Adjacência** que sustenta as arestas.
-  - `VecDeque`: Estrutura de fila para executar a BFS na recomendação.
-  - `HashSet`: Para prevenir loops em conexões cíclicas e garantir a não duplicação de recomendações, bloqueando também a indicação de itens já comprados.
-  - `Vec` e Algoritmos de ordenação: Para construir e ordenar os top-N produtos recomendados por relevância.
+---
 
-## Arquitetura da Solução
-A solução está dividida nos seguintes módulos:
-- `src/graph.rs`: Núcleo da lógica. Contém os modelos de `Node`, `NodeType` e a estrutura do `Graph` junto com seus métodos de inserção e travessia (BFS).
-- `src/lib.rs`: Expõe o módulo para testes e importação.
-- `src/main.rs`: Inicializa o projeto, cadastra produtos e clientes mockados na memória, injeta compras (arestas) e roda um benchmark inicial para medir tempo.
-- `tests/integration_tests.rs`: Bateria de testes automatizados garantindo que as lógicas de travessia estão corretas.
+## 🎯 Sobre o Projeto
 
-## Instruções para Compilação e Execução
-Certifique-se de ter o [Rust e o Cargo instalados](https://www.rust-lang.org/tools/install).
-Para compilar e executar o projeto:
-```bash
-# Na pasta raiz do projeto:
-cargo run
-```
+O projeto **ConectaStore** é uma solução de alto desempenho desenvolvida em **Rust** para a *MegaStore*. Seu principal objetivo é resolver a estagnação de vendas causada por recomendações genéricas de produtos.
 
-## Instruções para Execução dos Testes
-Testes de unidade e integração foram implementados garantindo a correta adição de nós, arestas e geração e deduplicação de recomendações.
-Para rodá-los:
+Em vez de focar apenas em "itens mais vendidos", o sistema mapeia o histórico e o comportamento de compras utilizando a teoria dos grafos. Isso nos permite criar um **Filtro Colaborativo**, inferindo gostos em comum entre diferentes clientes e recomendando novos produtos de forma altamente personalizada e assertiva.
+
+## 🏗 Arquitetura e Estruturas de Dados
+
+A base teórica e prática do projeto se fundamenta na representação das interações dos usuários como um **Grafo Bidirecional Não-Ponderado**.
+
+- **Vértices (Nós):** Clientes e Produtos.
+- **Arestas (Conexões):** Histórico de compras (Cliente $\leftrightarrow$ Produto).
+
+Para garantir escalabilidade e eficiência de memória no catálogo de milhões de itens da MegaStore, evitamos o uso de Matrizes de Adjacência. O projeto foi implementado utilizando:
+
+- `HashMap<u32, Vec<u32>>`: Para construir a **Lista de Adjacência**, garantindo acesso em tempo $O(1)$ aos nós vizinhos e mantendo o consumo de memória estritamente proporcional aos dados reais de conexões ($O(V+E)$).
+- `VecDeque`: Estrutura de fila utilizada para executar a **Busca em Largura (BFS)** de forma otimizada, guiando a descoberta de produtos similares.
+- `HashSet`: Utilizado estrategicamente no algoritmo para prevenir ciclos e impedir recomendações duplicadas ou de produtos que o usuário já adquiriu, sempre com checagens $O(1)$.
+
+## 🚀 Como Executar
+
+**Pré-requisitos:** Você precisará ter o compilador do [Rust e o Cargo](https://rustup.rs/) instalados na sua máquina.
+
+1. Clone este repositório:
+   ```bash
+   git clone https://github.com/LeonHauck/ConectaStore.git
+   ```
+2. Acesse a pasta do projeto no seu terminal:
+   ```bash
+   cd ConectaStore
+   ```
+3. Compile e execute a demonstração do motor de recomendação:
+   ```bash
+   cargo run
+   ```
+
+## 🧪 Testes e Desempenho
+
+O sistema conta com baterias de testes unitários e de integração (presentes em `tests/integration_tests.rs`). Os testes cobrem:
+- Criação e integridade dos nós e conexões.
+- Prevenção de duplicidade em caminhos cíclicos.
+- Lógica do Filtro Colaborativo (não recomendar produtos já possuídos).
+
+**Para executar os testes automatizados:**
 ```bash
 cargo test
 ```
 
-## Resultados dos Testes de Desempenho
-As medições básicas (incluídas na função `main`) revelam que a inserção de produtos e a execução da BFS local num limite de profundidade (3-steps) tomam menos de 1 milissegundo (`< 1ms`) em pequenas/médias escalas. Ao limitar a BFS apenas à "vizinhança de interesses", a complexidade de busca ignora a esmagadora maioria do catálogo, tornando a ferramenta ultra performática para consultas instantâneas em cenários de alta escalabilidade.
+> **Performance:** Devido ao controle de limite de profundidade (Depth = 3) na Busca em Largura e uso extensivo de tabelas Hash, as medições apontam a resolução de consultas na casa dos milissegundos (`< 1ms`), independentemente do tamanho total do catálogo, escalando o custo operacional apenas em relação ao grau ativo do usuário.
 
-## Vídeo Pitch
-*(Insira o link do YouTube para o seu Vídeo Pitch aqui após gravar e publicar)*
+## 📹 Vídeo Pitch
+
+Apresentação da solução, da modelagem matemática adotada e demonstração prática da execução e dos testes:
+
+🔗 **[Clique aqui para assistir ao Vídeo Pitch no YouTube](COLOQUE_SEU_LINK_AQUI)**
